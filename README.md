@@ -1,3 +1,5 @@
+![Tests](https://github.com/zzzkorn/russian_cost/actions/workflows/test.yml/badge.svg)
+![Lint](https://github.com/zzzkorn/russian_cost/actions/workflows/lint.yml/badge.svg)
 # Описание модуля russian_cost
 ____
 
