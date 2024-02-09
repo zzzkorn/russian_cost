@@ -63,7 +63,7 @@ print(cost)
 cost.out_format = '%s %R %p'
 print(cost)
 # - четыре рубля 24 копейки
-cost.coast = 34353.1
+cost.cost = 34353.1
 print(cost)
 # тридцать четыре тысячи триста пятьдесят три рубля 10 копеек
 cost.out_format = 'Ваша сдача %p (%P)'
@@ -77,7 +77,7 @@ from russian_cost import RussianCost
 cost = RussianCost(-4.24)
 print(cost)
 # минус четыре рубля двадцать четыре копейки
-print(cost.strfcoast('%s %R %p'))
+print(cost.strfcost('%s %R %p'))
 # - четыре рубля 24 копейки
 ```
 ## Формат вывода данных
@@ -98,7 +98,7 @@ import jinja2
 from docxtpl import DocxTemplate
 from russian_cost import strfcost
 
-context = dict(coast=12.34)
+context = dict(cost=12.34)
 jinja_env = jinja2.Environment()
 jinja_env.filters.update(strfcost=strfcost)
 doc = DocxTemplate(template_path)
@@ -108,7 +108,7 @@ doc.save(result_path)
 
 Внутри шаблона
 ```
-{{coast|strfcost}}
+{{cost|strfcost}}
 ....
-{{coast|strfcost('%S %R и на сдачу %p')}}
+{{cost|strfcost('%S %R и на сдачу %p')}}
 ```
