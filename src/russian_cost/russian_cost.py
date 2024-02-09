@@ -62,9 +62,9 @@ class RussianCost:
     """
 
     def __init__(
-            self,
-            cost: Union[int, float, str],
-            out_format: str = "%S %R %P",
+        self,
+        cost: Union[int, float, str],
+        out_format: str = "%S %R %P",
     ):
         self._cost = None
         self._rubles = None
@@ -84,11 +84,11 @@ class RussianCost:
         return self.strfcost(self.out_format)
 
     def _get_rubles_str(
-            self,
-            rubles,
-            index=1,
-            rubles_str=str(),
-            unit=True,
+        self,
+        rubles,
+        index=1,
+        rubles_str=str(),
+        unit=True,
     ) -> str:
         if not rubles:
             return re.sub(" +", " ", rubles_str.strip())
@@ -101,8 +101,14 @@ class RussianCost:
                     rubles_str,
                 ),
                 False: lambda x: "{} {} {} {}".format(
-                    self.cost_digits_str(x - x % 10, index) if x - x % 10
-                    else str(),
+                    (
+                        self.cost_digits_str(
+                            x - x % 10,
+                            index,
+                        )
+                        if x - x % 10
+                        else str()
+                    ),
                     self.cost_digits_str(x % 10, index) if x % 10 else str(),
                     self.unit_str(index, x),
                     rubles_str,
@@ -166,8 +172,7 @@ class RussianCost:
             if ch == "%" and i < n:
                 ch, i = out_format[i], i + 1
                 if ch not in {"s", "S", "r", "R", "p", "P"}:
-                    err_msg = ("Формат вывода стоимости не "
-                               "поддерживает: {}").format(ch)
+                    err_msg = "Формат вывода не поддерживает: {}".format(ch)
                     raise ValueError(err_msg)
         return re.sub(" +", " ", out_format.strip())
 
@@ -204,30 +209,46 @@ class RussianCost:
     def unit_str(index, value):
         limit = value % 10
         return {
-            0: "копеек"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("копейка" if limit == 1 else "копейки"),
-            1: "рублей"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("рубль" if limit == 1 else "рубля"),
-            1000: "тысяч"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("тысяча" if limit == 1 else "тысячи"),
-            pow(10, 6): "миллионов"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("миллион" if limit == 1 else "миллиона"),
-            pow(10, 9): "миллиардов"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("миллиард" if limit == 1 else "миллиарда"),
-            pow(10, 12): "триллионов"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("триллион" if limit == 1 else "триллиона"),
-            pow(10, 15): "квадриллионов"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("квадриллион" if limit == 1 else "квадриллиона"),
-            pow(10, 18): "квинтиллионов"
-            if 11 <= value <= 20 or not limit or 5 <= limit <= 9
-            else ("квинтиллион" if limit == 1 else "квинтиллиона"),
+            0: (
+                "копеек"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("копейка" if limit == 1 else "копейки")
+            ),
+            1: (
+                "рублей"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("рубль" if limit == 1 else "рубля")
+            ),
+            1000: (
+                "тысяч"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("тысяча" if limit == 1 else "тысячи")
+            ),
+            pow(10, 6): (
+                "миллионов"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("миллион" if limit == 1 else "миллиона")
+            ),
+            pow(10, 9): (
+                "миллиардов"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("миллиард" if limit == 1 else "миллиарда")
+            ),
+            pow(10, 12): (
+                "триллионов"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("триллион" if limit == 1 else "триллиона")
+            ),
+            pow(10, 15): (
+                "квадриллионов"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("квадриллион" if limit == 1 else "квадриллиона")
+            ),
+            pow(10, 18): (
+                "квинтиллионов"
+                if 11 <= value <= 20 or not limit or 5 <= limit <= 9
+                else ("квинтиллион" if limit == 1 else "квинтиллиона")
+            ),
         }.get(index)
 
     @staticmethod
@@ -266,7 +287,7 @@ class RussianCost:
 
 
 def strfcost(
-        cost: Union[int, float, str],
-        out_format: str = "%S %R %P",
+    cost: Union[int, float, str],
+    out_format: str = "%S %R %P",
 ) -> str:
     return RussianCost(cost, out_format)()
