@@ -4,6 +4,7 @@
 """
 import math
 import re
+from typing import Union
 
 DIGIT_DICT = {
     "penny": {
@@ -55,84 +56,40 @@ DIGIT_DICT = {
 }
 
 
-class Cost:
-    """
-    Дескриптор стоимости
-    """
-
-    def __init__(self, name):
-        self.name = name
-
-    def __get__(self, instance, owner):
-        return instance.__dict__[self.name]
-
-    def __set__(self, instance, value):
-        temp_val = float()
-        if isinstance(value, str):
-            try:
-                temp_val = float(value)
-            except ValueError:
-                raise ValueError(
-                    "Проверьте правильность переменной: {}".format(value),
-                )
-        elif isinstance(value, int):
-            temp_val = float(value)
-        elif isinstance(value, float):
-            temp_val = value
-        instance.__dict__[self.name] = round(temp_val, 2)
-
-
-class CostFormant:
-    """
-    Дескриптор формата вывода стоимости
-    """
-
-    def __init__(self, name):
-        self.name = name
-
-    def __get__(self, instance, owner):
-        return instance.__dict__[self.name]
-
-    def __set__(self, instance, value):
-        if not isinstance(value, str):
-            raise ValueError(
-                "Формат вывода стоимости должен передаваться в виде строки"
-            )
-        i, n = 0, len(value)
-        while i < n:
-            ch, i = value[i], i + 1
-            if ch == "%" and i < n:
-                ch, i = value[i], i + 1
-                if ch not in ["s", "S", "r", "R", "p", "P"]:
-                    err_msg = ("Формат вывода стоимости не "
-                               "поддерживает: {}").format(ch)
-                    raise ValueError(err_msg)
-        instance.__dict__[self.name] = value
-
-
 class RussianCost:
     """
     Класс для преобразования стоимости в строку
     """
 
-    _coast = Cost("coast")
-    out_format = CostFormant("out_format")
-
-    def __init__(self, cost, out_format="%S %R %P"):
-        self._coast = None
+    def __init__(
+            self,
+            cost: Union[int, float, str],
+            out_format: str = "%S %R %P",
+    ):
+        self._cost = None
         self._rubles = None
         self._penny = None
+        self._out_format = None
 
-        self.coast = cost
+        self.cost = cost
         self.out_format = out_format
 
     def __str__(self):
-        return re.sub(" +", " ", self.strfcoast(self.out_format).strip())
+        return self.strfcost(self.out_format)
 
     def __repr__(self):
-        return re.sub(" +", " ", self.strfcoast(self.out_format).strip())
+        return self.strfcost(self.out_format)
 
-    def _get_rubles_str(self, rubles, index=1, rubles_str=str(), unit=True):
+    def __call__(self):
+        return self.strfcost(self.out_format)
+
+    def _get_rubles_str(
+            self,
+            rubles,
+            index=1,
+            rubles_str=str(),
+            unit=True,
+    ) -> str:
         if not rubles:
             return re.sub(" +", " ", rubles_str.strip())
         if unit:
@@ -165,7 +122,7 @@ class RussianCost:
         return {
             True: lambda x: str() if x else "минус",
             False: lambda x: str() if x else "-",
-        }[is_string](True if self.coast > 0 else False)
+        }[is_string](True if self.cost > 0 else False)
 
     def _get_penny(self, is_string=True) -> str:
         if not self._penny:
@@ -197,16 +154,51 @@ class RussianCost:
             return "{} {}".format(self._rubles, unit)
         return self._get_rubles_str(self._rubles)
 
-    @property
-    def coast(self):
-        return self._coast
+    @staticmethod
+    def prepare_out_format(out_format: str) -> str:
+        if not isinstance(out_format, str):
+            raise ValueError(
+                "Формат вывода стоимости должен передаваться в виде строки"
+            )
+        i, n = 0, len(out_format)
+        while i < n:
+            ch, i = out_format[i], i + 1
+            if ch == "%" and i < n:
+                ch, i = out_format[i], i + 1
+                if ch not in {"s", "S", "r", "R", "p", "P"}:
+                    err_msg = ("Формат вывода стоимости не "
+                               "поддерживает: {}").format(ch)
+                    raise ValueError(err_msg)
+        return re.sub(" +", " ", out_format.strip())
 
-    @coast.setter
-    def coast(self, value):
-        self._coast = value
-        penny, rubles = math.modf(math.fabs(self._coast))
+    @staticmethod
+    def prepare_cost(cost: Union[int, float, str]) -> float:
+        try:
+            temp_val = float(cost)
+        except ValueError:
+            raise ValueError(
+                "Проверьте правильность переменной: {}".format(cost),
+            )
+        return round(temp_val, 2)
+
+    @property
+    def cost(self):
+        return self._cost
+
+    @cost.setter
+    def cost(self, value):
+        self._cost = self.prepare_cost(value)
+        penny, rubles = math.modf(math.fabs(self._cost))
         self._rubles = int(rubles)
         self._penny = int(round(penny, 2) * 100)
+
+    @property
+    def out_format(self):
+        return self._out_format
+
+    @out_format.setter
+    def out_format(self, value):
+        self._out_format = self.prepare_out_format(value)
 
     @staticmethod
     def unit_str(index, value):
@@ -249,13 +241,13 @@ class RussianCost:
             cost_digits_str = DIGIT_DICT.get(cost)
         return cost_digits_str
 
-    def strfcoast(self, fmc: str) -> str:
+    def strfcost(self, out_format: str) -> str:
         data = []
-        i, n = 0, len(fmc)
+        i, n = 0, len(out_format)
         while i < n:
-            ch, i = fmc[i], i + 1
+            ch, i = out_format[i], i + 1
             if ch == "%" and i < n:
-                ch, i = fmc[i], i + 1
+                ch, i = out_format[i], i + 1
                 if ch == "s":
                     data.append(self._get_sign(is_string=False))
                 elif ch == "S":
@@ -270,4 +262,11 @@ class RussianCost:
                     data.append(self._get_penny(is_string=True))
             else:
                 data.append(ch)
-        return "".join(data)
+        return re.sub(" +", " ", "".join(data).strip())
+
+
+def strfcost(
+        cost: Union[int, float, str],
+        out_format: str = "%S %R %P",
+) -> str:
+    return RussianCost(cost, out_format)()

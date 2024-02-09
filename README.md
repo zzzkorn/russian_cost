@@ -7,6 +7,7 @@ ____
 0. [Общая информация](#Общая-информация)
 1. [Помещение данных в класс и их вывод](#Помещение-данных-в-класс-и-их-вывод)
 2. [Формат вывода данных](#Формат-вывода-данных)
+3. [Пример использования в шаблонизаторах](#Пример-использования-в-шаблонизаторах)
 
 
 ## Общая информация
@@ -69,7 +70,7 @@ cost.out_format = 'Ваша сдача %p (%P)'
 print(cost)
 # Ваша сдача 10 копеек (десять копеек)
 ```
-Так же класс `RussianCost` поддерживает метод `strfcoast`, который позволяет вывести стоимость в нужном формате, без изменения формата ввода класса `out_format`:
+Так же класс `RussianCost` поддерживает метод `strfcost`, который позволяет вывести стоимость в нужном формате, без изменения формата ввода класса `out_format`:
 ```Python
 from russian_cost import RussianCost
 
@@ -89,3 +90,25 @@ print(cost.strfcoast('%s %R %p'))
 | %r | Рубли в символьном виде | 4 рубля |
 | %P | Копейки в текстовом виде | двадцать четыре копейки |
 | %p | Копейки в символьном виде | 24 копейки |
+
+## Пример использования в шаблонизаторах
+
+```Python
+import jinja2
+from docxtpl import DocxTemplate
+from russian_cost import strfcost
+
+context = dict(coast=12.34)
+jinja_env = jinja2.Environment()
+jinja_env.filters.update(strfcost=strfcost)
+doc = DocxTemplate(template_path)
+doc.render(context, jinja_env)
+doc.save(result_path)
+```
+
+Внутри шаблона
+```
+{{coast|strfcost}}
+....
+{{coast|strfcost('%S %R и на сдачу %p')}}
+```
